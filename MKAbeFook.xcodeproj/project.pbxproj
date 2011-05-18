@@ -44,7 +44,6 @@
 		277BC4CD0D14815E00B9EFFE /* MKFacebookRequestQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 277BC4CB0D14815E00B9EFFE /* MKFacebookRequestQueue.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2784C16A0E34D7CB00AD28B1 /* MKErrorWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 2784C1680E34D7CB00AD28B1 /* MKErrorWindow.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2784C16B0E34D7CB00AD28B1 /* MKErrorWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2784C1690E34D7CB00AD28B1 /* MKErrorWindow.m */; };
-		2784C16D0E34D81E00AD28B1 /* ErrorWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = 2784C16C0E34D81E00AD28B1 /* ErrorWindow.nib */; };
 		27C2B95E11424569002B1FB7 /* MKFacebookResponseError.h in Headers */ = {isa = PBXBuildFile; fileRef = 27C2B95C11424569002B1FB7 /* MKFacebookResponseError.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		27C2B95F11424569002B1FB7 /* MKFacebookResponseError.m in Sources */ = {isa = PBXBuildFile; fileRef = 27C2B95D11424569002B1FB7 /* MKFacebookResponseError.m */; };
 		27D8B08D0AE6FF57007941CF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27D8B08C0AE6FF57007941CF /* WebKit.framework */; };
@@ -52,11 +51,13 @@
 		27D8B0A70AE6FFA7007941CF /* MKLoginWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 27D8B0A50AE6FFA7007941CF /* MKLoginWindow.m */; };
 		27D8B0AA0AE6FFB2007941CF /* MKFacebook.h in Headers */ = {isa = PBXBuildFile; fileRef = 27D8B0A80AE6FFB2007941CF /* MKFacebook.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		27D8B0AB0AE6FFB2007941CF /* MKFacebook.m in Sources */ = {isa = PBXBuildFile; fileRef = 27D8B0A90AE6FFB2007941CF /* MKFacebook.m */; };
-		27D8B0AD0AE6FFBC007941CF /* LoginWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = 27D8B0AC0AE6FFBC007941CF /* LoginWindow.nib */; };
 		27D8B0AF0AE7000C007941CF /* MKAbeFook.h in Headers */ = {isa = PBXBuildFile; fileRef = 27D8B0AE0AE7000C007941CF /* MKAbeFook.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		27F59BF6129360590090474A /* login_failed.html in Resources */ = {isa = PBXBuildFile; fileRef = 27F59BF5129360590090474A /* login_failed.html */; };
 		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		E122F8F31384108400947668 /* MKAbeFook.ldb in Resources */ = {isa = PBXBuildFile; fileRef = E122F8F21384108400947668 /* MKAbeFook.ldb */; };
+		E122F8F61384109500947668 /* LoginWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = E122F8F51384109500947668 /* LoginWindow.nib */; };
+		E122F8FA138410B700947668 /* ErrorWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = E122F8F9138410B700947668 /* ErrorWindow.nib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -101,7 +102,7 @@
 		277BC4CB0D14815E00B9EFFE /* MKFacebookRequestQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKFacebookRequestQueue.h; sourceTree = "<group>"; };
 		2784C1680E34D7CB00AD28B1 /* MKErrorWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKErrorWindow.h; sourceTree = "<group>"; };
 		2784C1690E34D7CB00AD28B1 /* MKErrorWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKErrorWindow.m; sourceTree = "<group>"; };
-		2784C16C0E34D81E00AD28B1 /* ErrorWindow.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = ErrorWindow.nib; sourceTree = "<group>"; };
+		2784C16C0E34D81E00AD28B1 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/ErrorWindow.nib; sourceTree = "<group>"; };
 		27C2B95C11424569002B1FB7 /* MKFacebookResponseError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKFacebookResponseError.h; sourceTree = "<group>"; };
 		27C2B95D11424569002B1FB7 /* MKFacebookResponseError.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKFacebookResponseError.m; sourceTree = "<group>"; };
 		27D8B08C0AE6FF57007941CF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = /System/Library/Frameworks/WebKit.framework; sourceTree = "<absolute>"; };
@@ -109,12 +110,15 @@
 		27D8B0A50AE6FFA7007941CF /* MKLoginWindow.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = MKLoginWindow.m; sourceTree = "<group>"; };
 		27D8B0A80AE6FFB2007941CF /* MKFacebook.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MKFacebook.h; sourceTree = "<group>"; };
 		27D8B0A90AE6FFB2007941CF /* MKFacebook.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = MKFacebook.m; sourceTree = "<group>"; };
-		27D8B0AC0AE6FFBC007941CF /* LoginWindow.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = LoginWindow.nib; sourceTree = "<group>"; };
+		27D8B0AC0AE6FFBC007941CF /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/LoginWindow.nib; sourceTree = "<group>"; };
 		27D8B0AE0AE7000C007941CF /* MKAbeFook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKAbeFook.h; sourceTree = "<group>"; };
 		27F59BF5129360590090474A /* login_failed.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = login_failed.html; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* MKAbeFook_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKAbeFook_Prefix.pch; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* MKAbeFook.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MKAbeFook.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E122F8F21384108400947668 /* MKAbeFook.ldb */ = {isa = PBXFileReference; lastKnownFileType = file; path = MKAbeFook.ldb; sourceTree = "<group>"; };
+		E122F8F7138410A200947668 /* de */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = de; path = de.lproj/LoginWindow.nib; sourceTree = "<group>"; };
+		E122F8F8138410AF00947668 /* fr */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = fr; path = fr.lproj/LoginWindow.nib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,6 +153,7 @@
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				089C1665FE841158C02AAC07 /* Resources */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
+				E122F8F21384108400947668 /* MKAbeFook.ldb */,
 				034768DFFF38A50411DB9C8B /* Products */,
 			);
 			name = MKAbeFook;
@@ -227,7 +232,7 @@
 			children = (
 				2784C1680E34D7CB00AD28B1 /* MKErrorWindow.h */,
 				2784C1690E34D7CB00AD28B1 /* MKErrorWindow.m */,
-				2784C16C0E34D81E00AD28B1 /* ErrorWindow.nib */,
+				E122F8F9138410B700947668 /* ErrorWindow.nib */,
 			);
 			name = "Error Window";
 			sourceTree = "<group>";
@@ -274,7 +279,7 @@
 			children = (
 				27D8B0A40AE6FFA7007941CF /* MKLoginWindow.h */,
 				27D8B0A50AE6FFA7007941CF /* MKLoginWindow.m */,
-				27D8B0AC0AE6FFBC007941CF /* LoginWindow.nib */,
+				E122F8F51384109500947668 /* LoginWindow.nib */,
 			);
 			name = "Login Window";
 			sourceTree = "<group>";
@@ -357,6 +362,8 @@
 				Japanese,
 				French,
 				German,
+				de,
+				fr,
 			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* MKAbeFook */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
@@ -374,10 +381,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */,
-				27D8B0AD0AE6FFBC007941CF /* LoginWindow.nib in Resources */,
-				2784C16D0E34D81E00AD28B1 /* ErrorWindow.nib in Resources */,
+				E122F8F61384109500947668 /* LoginWindow.nib in Resources */,
+				E122F8FA138410B700947668 /* ErrorWindow.nib in Resources */,
 				273646D8106F3B720044AEB3 /* login_successful.html in Resources */,
 				27F59BF6129360590090474A /* login_failed.html in Resources */,
+				E122F8F31384108400947668 /* MKAbeFook.ldb in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -420,6 +428,24 @@
 				089C1667FE841158C02AAC07 /* English */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		E122F8F51384109500947668 /* LoginWindow.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				27D8B0AC0AE6FFBC007941CF /* English */,
+				E122F8F7138410A200947668 /* de */,
+				E122F8F8138410AF00947668 /* fr */,
+			);
+			name = LoginWindow.nib;
+			sourceTree = "<group>";
+		};
+		E122F8F9138410B700947668 /* ErrorWindow.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2784C16C0E34D81E00AD28B1 /* English */,
+			);
+			name = ErrorWindow.nib;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
