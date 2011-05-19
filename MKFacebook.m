@@ -97,14 +97,28 @@ NSString *MKFacebookDefaultResponseFormat = @"XML";
 	[self loginWithPermissions:nil forSheet:NO];
 }
 
+
+- (void)relogin
+{
+	[self loginWithPermissions:nil forRelogin:YES forSheet:NO];
+}
+
+
 - (NSWindow *)loginWithPermissions:(NSArray *)permissions forSheet:(BOOL)sheet
+{
+	return [self loginWithPermissions:permissions forRelogin:NO forSheet:sheet];
+}
+
+
+- (NSWindow *)loginWithPermissions:(NSArray *)permissions forRelogin:(BOOL)relogin forSheet:(BOOL)sheet
 {
 	//try to use existing session
 	if ([[MKFacebookSession sharedMKFacebookSession] loadAccessToken] == YES)
 	{
 		[self userLoginSuccessful];
 		return nil;
-	}else
+	}
+	else if (relogin == NO)
 	{
 		//prepare loginwindow
 		loginWindow = [[MKLoginWindow alloc] init]; //will be released when closed			
@@ -152,6 +166,11 @@ NSString *MKFacebookDefaultResponseFormat = @"XML";
 			return [loginWindow window];
 		}
 	}
+	else
+	{
+		// Relogin failed - Inform user that he has to login again.
+	}
+	
 	return nil;
 }
 

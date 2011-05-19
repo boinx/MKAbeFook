@@ -165,6 +165,9 @@ extern NSString *MKFacebookDefaultResponseFormat;
 - (NSWindowController *)loginWithPermissions:(NSArray *)permissions forSheet:(BOOL)sheet;
 
 
+- (NSWindow *)loginWithPermissions:(NSArray *)permissions forRelogin:(BOOL)relogin forSheet:(BOOL)sheet;
+
+
 
 /*!
  @brief Checks for a valid session in NSUserDefaults.
