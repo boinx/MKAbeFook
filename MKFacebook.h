@@ -59,6 +59,8 @@ extern NSString *MKFacebookDefaultResponseFormat;
 
 #pragma mark Properties
 
+@property (assign) BOOL useModalLogin;
+
 
 #pragma mark -
 

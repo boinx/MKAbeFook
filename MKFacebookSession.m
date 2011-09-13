@@ -91,11 +91,12 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MKFacebookSession);
 - (void)destroyAccessToken{
 	DLog(@"session was destroyed");
 	[[NSUserDefaults standardUserDefaults] removeObjectForKey:MKFacebookAccessTokenKey];
+	[[NSUserDefaults standardUserDefaults] synchronize];
 	self.accessToken = nil;
     if (_uid != nil) {
         [_uid release];
+		_uid = nil;
     }
-    _uid = nil;
 	_validSession = NO;
 }
 
