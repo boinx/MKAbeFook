@@ -25,16 +25,13 @@
 #import "MKFacebookSession.h"
 #import "MKFacebookRequest.h"
 
-NSString *MKAPIServerURL = @"api.facebook.com/restserver.php";
-NSString *MKVideoAPIServerURL = @"api-video.facebook.com/restserver.php";
-NSString *MKLoginUrl = @"https://www.facebook.com/login.php";
-NSString *MKExtendPermissionsURL = @"https://www.facebook.com/connect/prompt_permissions.php";
-NSString *MKFacebookAPIVersion = @"1.0";
+NSString *MKAPIServerURL = @"https://api.facebook.com/method/";
+NSString *MKLoginUrl = @"https://www.facebook.com/dialog/oauth";
+NSString *MKExtendPermissionsURL = @"http://www.facebook.com/connect/prompt_permissions.php";
 NSString *MKFacebookDefaultResponseFormat = @"XML";
 
 
 @interface MKFacebook (Private)
-- (void)setApiKey:(NSString *)anApiKey;
 - (NSURL *)prepareLoginURLWithExtendedPermissions:(NSArray *)extendedPermissions;
 @end
 
@@ -43,17 +40,18 @@ NSString *MKFacebookDefaultResponseFormat = @"XML";
 
 #pragma mark Properties
 
+@synthesize useModalLogin;
 
 #pragma mark -
 
 #pragma mark init methods
-+ (MKFacebook *)facebookWithAPIKey:(NSString *)anAPIKey delegate:(id)aDelegate
++ (MKFacebook *)facebookWithAppID:(NSString *)anAppID delegate:(id)aDelegate
 {
-	return [[[MKFacebook alloc] initUsingAPIKey:anAPIKey delegate:(id)aDelegate] autorelease];
+	return [[[MKFacebook alloc] initUsingAppID:anAppID delegate:(id)aDelegate] autorelease];
 }
 
 
-- (MKFacebook *)initUsingAPIKey:(NSString *)anAPIKey delegate:(id)aDelegate
+- (MKFacebook *)initUsingAppID:(NSString *)anAppID delegate:(id)aDelegate
 {
 	if(![aDelegate respondsToSelector:@selector(userLoginSuccessful)])
 	{
@@ -68,11 +66,11 @@ NSString *MKFacebookDefaultResponseFormat = @"XML";
 	self = [super init];
 	if(self != nil)
 	{
-		[[MKFacebookSession sharedMKFacebookSession] setApiKey:anAPIKey];
+		[[MKFacebookSession sharedMKFacebookSession] setAppID:anAppID];
 
 		_delegate = aDelegate;
 		_displayLoginAlerts = YES;
-		useModalLogin = NO;
+		self.useModalLogin = NO;
 
 	}
 	return self;
@@ -94,18 +92,32 @@ NSString *MKFacebookDefaultResponseFormat = @"XML";
 }
 
 - (void)loginUsingModalWindow{
-	useModalLogin = YES;
+	self.useModalLogin = YES;
 	[self loginWithPermissions:nil forSheet:NO];
 }
 
+
+- (void)relogin
+{
+	[self loginWithPermissions:nil forRelogin:YES forSheet:NO];
+}
+
+
 - (NSWindow *)loginWithPermissions:(NSArray *)permissions forSheet:(BOOL)sheet
 {
+	return [self loginWithPermissions:permissions forRelogin:NO forSheet:sheet];
+}
+
+
+- (NSWindow *)loginWithPermissions:(NSArray *)permissions forRelogin:(BOOL)relogin forSheet:(BOOL)sheet
+{
 	//try to use existing session
-	if ([[MKFacebookSession sharedMKFacebookSession] loadSession] == YES)
+	if ([[MKFacebookSession sharedMKFacebookSession] loadAccessToken] == YES)
 	{
 		[self userLoginSuccessful];
 		return nil;
-	}else
+	}
+	else if (relogin == NO)
 	{
 		//prepare loginwindow
 		loginWindow = [[MKLoginWindow alloc] init]; //will be released when closed			
@@ -123,7 +135,7 @@ NSString *MKFacebookDefaultResponseFormat = @"XML";
 		if(sheet == NO)
 		{
 			[[loginWindow window] center];
-			if (useModalLogin == YES) {
+			if (self.useModalLogin == YES) {
 				DLog(@"display modal login");
 				loginWindow.runModally = YES;
 				//borrowed from - http://www.dejal.com/blog/2007/01/cocoa-topics-case-modal-webview
@@ -153,6 +165,11 @@ NSString *MKFacebookDefaultResponseFormat = @"XML";
 			return [loginWindow window];
 		}
 	}
+	else
+	{
+		// Relogin failed - Inform user that he has to login again.
+	}
+	
 	return nil;
 }
 
@@ -160,7 +177,7 @@ NSString *MKFacebookDefaultResponseFormat = @"XML";
 
 - (BOOL)userLoggedIn
 {
-	return [[MKFacebookSession sharedMKFacebookSession] validSession];
+	return [[MKFacebookSession sharedMKFacebookSession] validAccessToken];
 	
 }
 
@@ -175,77 +192,14 @@ NSString *MKFacebookDefaultResponseFormat = @"XML";
 - (void)logout
 {
 	//TODO: implement logout
-	[[MKFacebookSession sharedMKFacebookSession] destroySession];
+	[[MKFacebookSession sharedMKFacebookSession] destroyAccessToken];
 }
 
 
 - (void)userLoginSuccessful
 {
-	
 	if([_delegate respondsToSelector:@selector(userLoginSuccessful)])
-		[_delegate performSelector:@selector(userLoginSuccessful)];
-	
-}
-
-
-- (void)grantExtendedPermission:(NSString *)aString
-{
-//	if([self userLoggedIn] == NO)
-//	{
-//		if(_displayLoginAlerts == YES)
-//		{
-//			MKErrorWindow *errorWindow = [MKErrorWindow errorWindowWithTitle:@"No user logged in!" message:@"Permissions cannot be extended if no one is logged in." details:nil];
-//			[errorWindow display];
-//		}
-//		return;
-//	}
-//	
-//	loginWindow = [[MKLoginWindow alloc] init]; //will be released when closed			
-//	[[loginWindow window] setTitle:@"Extended Permissions"];
-//	[loginWindow showWindow:self];
-//	//[loginWindow setWindowSize:NSMakeSize(GRANT_PERMISSIONS_WINDOW_WIDTH, GRANT_PERMISSIONS_WINDOW_HEIGHT)];
-//	
-//	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?api_key=%@&v=%@&ext_perm=%@&popup", MKExtendPermissionsURL, [[MKFacebookSession sharedMKFacebookSession] apiKey], MKFacebookAPIVersion, aString]];
-//	[loginWindow loadURL:url];
-	
-	
-	[self grantExtendedPermission:aString forSheet:NO];
-	
-	
-}
-
-
-- (NSWindow *)grantExtendedPermission:(NSString *)aString forSheet:(BOOL)forSheet
-{
-	if([self userLoggedIn] == NO)
-	{
-		if(_displayLoginAlerts == YES)
-		{
-			MKErrorWindow *errorWindow = [MKErrorWindow errorWindowWithTitle:@"No user logged in!" message:@"Permissions cannot be extended if no one is logged in." details:nil];
-			[errorWindow display];
-		}
-		return nil;
-	}
-	
-	loginWindow = [[MKLoginWindow alloc] init];
-	[[loginWindow window] setTitle:@"Extended Permissions"];
-	loginWindow._loginWindowIsSheet = forSheet;
-	
-	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?api_key=%@&v=%@&ext_perm=%@&display=popup&fbconnect=true&next=http://www.facebook.com/connect/login_success.html?xxRESULTTOKENxx", MKExtendPermissionsURL, [[MKFacebookSession sharedMKFacebookSession] apiKey], MKFacebookAPIVersion, aString]];
-	
-
-	[loginWindow loadURL:url];
-	
-	if (forSheet == YES) {
-		
-		return [loginWindow window];
-	}else {
-		[[loginWindow window] center];
-		[loginWindow showWindow:self];
-		return nil;
-	}
-
-	return nil;
+		[_delegate performSelector:@selector(userLoginSuccessful)];	
 }
 
 
@@ -262,32 +216,22 @@ NSString *MKFacebookDefaultResponseFormat = @"XML";
 
 
 
-//private
+#pragma mark Private
 - (NSURL *)prepareLoginURLWithExtendedPermissions:(NSArray *)extendedPermissions
 {
 	NSMutableString *loginString = [[[NSMutableString alloc] initWithString:MKLoginUrl] autorelease];
-	[loginString appendString:@"?api_key="];
-	[loginString appendString:[[MKFacebookSession sharedMKFacebookSession] apiKey]];
-	[loginString appendString:@"&v="];
-	[loginString appendString:MKFacebookAPIVersion];
+	[loginString appendString:@"?client_id="];
+	[loginString appendString:[[MKFacebookSession sharedMKFacebookSession] appID]];
+	[loginString appendString:@"&display=popup"];
+	[loginString appendFormat:@"&redirect_uri=%@", MKLoginRedirectURI];
+    [loginString appendString:@"&response_type=token"];
 	
-	[loginString appendString:@"&connect_display=popup"];
-	
-	[loginString appendString:@"&next=http://www.facebook.com/connect/login_success.html"];
-	//[loginString appendString:@"&cancel_url=http://www.facebook.com/connect/login_failure.html"];
-	
-	[loginString appendString:@"&fbconnect=true"];
-	[loginString appendString:@"&return_session=true"];
-
 	if(extendedPermissions != nil)
 	{
-		[loginString appendFormat:@"&req_perms=%@",[extendedPermissions componentsJoinedByString:@","]];
+		[loginString appendFormat:@"&scope=%@",[extendedPermissions componentsJoinedByString:@","]];
 	}
 
-	[loginString appendString:@"&skipcookie"];
-
-	return [NSURL URLWithString:loginString];
-	
+	return [NSURL URLWithString:loginString];	
 }
 
 

@@ -29,13 +29,24 @@
 NSString *MKFacebookRequestActivityStarted = @"MKFacebookRequestActivityStarted";
 NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 
+@interface MKFacebookRequest (Private)
+- (NSString *)generateFacebookMethodURL;
+@end
+
 
 @implementation MKFacebookRequest
 
-@synthesize connectionTimeoutInterval;
+@synthesize delegate;
+@synthesize selector;
 @synthesize method;
-@synthesize responseFormat;
+@synthesize parameters;
 @synthesize rawResponse;
+@synthesize urlRequestType;
+@synthesize responseFormat;
+@synthesize numberOfRequestAttempts;
+@synthesize displayAPIErrorAlerts;
+@synthesize connectionTimeoutInterval;
+
 
 #pragma mark init methods
 + (id)requestWithDelegate:(id)aDelegate
@@ -57,18 +68,16 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 	self = [super init];
 	if(self != nil)
 	{
-		_delegate = nil;
-		_selector = nil;
+		delegate = nil;
+		selector = nil;
 		
 		_responseData = [[NSMutableData alloc] init];
-		_parameters = [[NSMutableDictionary alloc] init];
-		_urlRequestType = MKFacebookRequestTypePOST;
+		parameters = [[NSMutableDictionary alloc] init];
+		urlRequestType = MKFacebookRequestTypePOST;
 		responseFormat = MKFacebookRequestResponseFormatXML;
-        MKFacebookSession *session = [MKFacebookSession sharedMKFacebookSession];
-        NSString *urlString = [NSString stringWithFormat:@"%@%@", session.protocol, MKAPIServerURL];
-		requestURL = [[NSURL URLWithString:urlString] retain];
-		_displayAPIErrorAlert = NO;
-		_numberOfRequestAttempts = 5;
+		requestURL = [[NSURL URLWithString:MKAPIServerURL] retain];
+		displayAPIErrorAlerts = NO;
+		numberOfRequestAttempts = 5;
 		_session = [MKFacebookSession sharedMKFacebookSession];
 		self.connectionTimeoutInterval = 30;
 		self.method = nil;
@@ -101,21 +110,11 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 }
 
 
-- (id)initWithParameters:(NSDictionary *)parameters delegate:(id)aDelegate selector:(SEL)aSelector{
-	
-	self = [self initWithDelegate:aDelegate selector:aSelector];
-	if(self != nil)
-	{
-		
-	}
-	return self;
-}
-
 
 -(void)dealloc
 {
 	[requestURL release];
-	[_parameters release];
+	[parameters release];
 	[_responseData release];
 	[method release];
 	[rawResponse release];
@@ -125,112 +124,52 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 
 
 #pragma mark Instance Methods
-- (void)setDelegate:(id)delegate
+
+- (void)setParameters:(NSDictionary *)params
 {
-	_delegate = delegate;
+    if (parameters != nil) {
+        [parameters removeAllObjects];
+    }
+    //we don't want the method variable in the parameters dictionary anymore, if we find it remove it
+    if ([params objectForKey:@"method"]) {
+        NSMutableDictionary *p = [NSMutableDictionary dictionaryWithDictionary:params];
+        self.method = [p objectForKey:@"method"];
+        [p removeObjectForKey:@"method"];
+        [parameters addEntriesFromDictionary:p];
+    }else{
+        [parameters addEntriesFromDictionary:params];
+    }
+	
 }
 
 
-- (id)delegate
+- (void)sendRequestWithParameters:(NSDictionary *)params
 {
-	return _delegate;
+    [self setParameters:params];
+    [self sendRequest];
 }
 
 
-- (void)setSelector:(SEL)selector
+- (void)sendRequest:(NSString *)aMethod withParameters:(NSDictionary *)params
 {
-	_selector = selector;
-}
-
-
-- (void)setParameters:(NSDictionary *)parameters
-{
-	[_parameters addEntriesFromDictionary:parameters];
-}
-
-
-- (void)setURLRequestType:(MKFacebookRequestType)urlRequestType
-{
-	_urlRequestType = urlRequestType;
-}
-
-
-- (MKFacebookRequestType)urlRequestType
-{
-	return _urlRequestType;
-}
-
-
--(void)setRequestFormat:(MKFacebookRequestResponseFormat)requestFormat
-{
-	responseFormat = requestFormat;
-}
-
-
-- (void)sendRequest:(NSString *)aMethod withParameters:(NSDictionary *)parameters{
 	self.method = aMethod;
-	[self setParameters:parameters];
+	[self setParameters:params];
 	[self sendRequest];
 }
 
-- (void)sendRequestWithParameters:(NSDictionary *)parameters{
-	[self setParameters:parameters];
-	[self sendRequest];
-}
 
 - (void)sendRequest
 {	
-	//all requests require a method of some sort
-	if (self.method == nil && [_parameters valueForKey:@"method"] == nil) {
-		NSException *exception = [NSException exceptionWithName:@"Missing Method" reason:@"No method was found. Set the property or include a 'method' key in the parameters dictionary." userInfo:nil];
-		[exception raise];
-		return;
-	}
-
-	//prefer to use the property if possible
-	if (self.method != nil) {
-		[_parameters setValue:self.method forKey:@"method"];
-	}
-	
-	//set the method property so it can easily be retrieved by delegates
-	if (self.method == nil) {
-		self.method = [_parameters valueForKey:@"method"];
-	}
-
-	
-	//if no user is logged in and they're trying to send a request OTHER than something required for logging in a user abort the request
-	if(!_session.validSession && (![[_parameters valueForKey:@"method"] isEqualToString:@"facebook.auth.getSession"] && ![[_parameters valueForKey:@"method"] isEqualToString:@"facebook.auth.createToken"]))
-	{
-		
-		NSError *error = [NSError errorWithDomain:@"MKAbeFook" code:0 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"No user is logged in.", @"Error", nil]];
-		if([_delegate respondsToSelector:defaultFailedSelector])
-		{
-			NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[_delegate methodSignatureForSelector:defaultFailedSelector]];
-			[invocation setTarget:_delegate];
-			[invocation setSelector:defaultFailedSelector];
-			[invocation setArgument:&self atIndex:2];
-			[invocation setArgument:&error atIndex:3];
-			[invocation invoke];
-		}else if ([_delegate respondsToSelector:deprecatedFailedSelector]) {
-			[_delegate performSelector:deprecatedFailedSelector withObject:error];
-		}
-		
-		if (_displayAPIErrorAlert == YES) {
-			MKErrorWindow *errorWindow = [MKErrorWindow errorWindowWithTitle:@"Invalid Session" message:@"A request could not be completed because no user is logged in" details:[NSString stringWithFormat:@"Request Details: \n\n%@", [_parameters description]]];
-			[errorWindow display];
-		}
+    NSAssert(self.method != nil, @"Request method not set");
+    
+    //a valid access token is required for all requests
+    //TODO: error out request if toke is not found
+	NSString *accessToken = [[MKFacebookSession sharedMKFacebookSession] accessToken];
+    if (accessToken != nil) {
+        [parameters setValue:accessToken forKey:@"access_token"];
+    }
 
 		
-		NSException *exception = [NSException exceptionWithName:@"Invalid Facebook Connection"
-														 reason:@"MKFacebookRequest could not continue because no user is logged in.  Request has been aborted."
-													   userInfo:nil];
-		
-		[exception raise];
-		
-		
-		return;
-	}
-	
 	NSString *applicationName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"];
 	NSString *applicationVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
 	NSString *userAgent;
@@ -241,10 +180,11 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 	
 	
 	_requestIsDone = NO;
-	if(_urlRequestType == MKFacebookRequestTypePOST)
+	if(urlRequestType == MKFacebookRequestTypePOST)
 	{
 		//NSLog([_facebookConnection description]);
-		NSMutableURLRequest *postRequest = [NSMutableURLRequest requestWithURL:requestURL 
+        NSURL *url = [NSURL URLWithString:[self generateFacebookMethodURL]];
+		NSMutableURLRequest *postRequest = [NSMutableURLRequest requestWithURL:url 
 																	 cachePolicy:NSURLRequestReloadIgnoringCacheData 
 																 timeoutInterval:[self connectionTimeoutInterval]];
 		
@@ -258,46 +198,31 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 		[postRequest addValue:contentType forHTTPHeaderField:@"Content-Type"];
 		[postBody appendData:[[NSString stringWithFormat:@"--%@\r\n", stringBoundary] dataUsingEncoding:NSUTF8StringEncoding]];
 
-		//add items that are required by all requests to _parameters dictionary so they are added to the postRequest and we can easily make a sig from them
-		[_parameters setValue:MKFacebookAPIVersion forKey:@"v"];
-		[_parameters setValue:[_session apiKey] forKey:@"api_key"];
-
 		switch (self.responseFormat) {
 			case MKFacebookRequestResponseFormatXML:
-				[_parameters setValue:@"XML" forKey:@"format"];
+				[parameters setValue:@"XML" forKey:@"format"];
 				break;
 			case MKFacebookRequestResponseFormatJSON:
-				[_parameters setValue:@"JSON" forKey:@"format"];
+				[parameters setValue:@"JSON" forKey:@"format"];
 				break;
 			default:
-				[_parameters setValue:@"XML" forKey:@"format"];
+				[parameters setValue:@"XML" forKey:@"format"];
 				break;
 		}
 		
 		
-		
-		//all other methods require call_id and session_key.
-		if(![[_parameters valueForKey:@"method"] isEqualToString:@"facebook.auth.getSession"] || ![[_parameters valueForKey:@"method"] isEqualToString:@"facebook.auth.createToken"])
-		{
-			[_parameters setValue:[_session sessionKey] forKey:@"session_key"];
-			[_parameters setValue:[self generateTimeStamp] forKey:@"call_id"];
-		}
-
 		
 		
 		//if parameters contains a NSImage or NSData object we need store the key so it can be removed from the _parameters dictionary before a signature is generated for the request
 		NSString *imageKey = nil;
 		NSString *dataKey = nil;
-
-		//in order to allow NSArrays containing strings instead of @"one,two,three" string lists - we will grab the original _parameters key and put they key=>newly generated string from the array in the arrayKeysAndValues dictionary so we can create a valid signature later
-		NSMutableDictionary *arrayKeysAndValues = [[[NSMutableDictionary alloc] init] autorelease];
 		
-		for(id key in [_parameters allKeys])
+		for(id key in [parameters allKeys])
 		{
 			
-			if([[_parameters objectForKey:key] isKindOfClass:[NSImage class]])
+			if([[parameters objectForKey:key] isKindOfClass:[NSImage class]])
 			{
-				NSData *resizedTIFFData = [[_parameters objectForKey:key] TIFFRepresentation];
+				NSData *resizedTIFFData = [[parameters objectForKey:key] TIFFRepresentation];
 				NSBitmapImageRep *resizedImageRep = [NSBitmapImageRep imageRepWithData: resizedTIFFData];
 				NSDictionary *imageProperties = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat: 1.0] forKey:NSImageCompressionFactor];
 				NSData *imageData = [resizedImageRep representationUsingType: NSJPEGFileType properties: imageProperties];
@@ -312,23 +237,17 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 				imageKey = [NSString stringWithString:key];
 
 			}
-			else if( [[_parameters objectForKey:key] isKindOfClass:[NSData class]] ){
+			else if( [[parameters objectForKey:key] isKindOfClass:[NSData class]] ){
 				[postBody appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; filename=\"data.mov\"\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 				[postBody appendData:[[NSString stringWithString:@"Content-Type: content/unknown\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];	
-				[postBody appendData:(NSData *)[_parameters objectForKey:key]];
+				[postBody appendData:(NSData *)[parameters objectForKey:key]];
 				[postBody appendData:endLineData];
 				dataKey = [NSString stringWithString:key];
 				
 			}
-			else if ([[_parameters objectForKey:key] isKindOfClass:[NSArray class]])
+			else if ([[parameters objectForKey:key] isKindOfClass:[NSArray class]])
 			{
-				NSString *stringFromArray = [[_parameters objectForKey:key] componentsJoinedByString:@","];
-				//items we find in the array must go back into the _parameters dictionary so a valid signature can be generated. we'll put it in a temporary dictionary for now and swap them when we're done looping through _parameters
-				if(stringFromArray != nil)
-				{
-					DLog(@"setting %@ for key: %@", stringFromArray, key);
-					[arrayKeysAndValues setObject:stringFromArray forKey:key];
-				}
+				NSString *stringFromArray = [[parameters objectForKey:key] componentsJoinedByString:@","];
 				[postBody appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"\r\n\r\n", key] dataUsingEncoding:NSUTF8StringEncoding]];
 				[postBody appendData:[stringFromArray dataUsingEncoding:NSUTF8StringEncoding]];
 				[postBody appendData:endLineData];
@@ -337,41 +256,28 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 			{
 			 
 				[postBody appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"\r\n\r\n", key] dataUsingEncoding:NSUTF8StringEncoding]];
-				[postBody appendData:[[_parameters valueForKey:key] dataUsingEncoding:NSUTF8StringEncoding]];
+				[postBody appendData:[[parameters valueForKey:key] dataUsingEncoding:NSUTF8StringEncoding]];
 				[postBody appendData:endLineData];
 			}
 			 
 		}
 		//0.7.1 fix.  we can't remove this during the while loop so we'll do it here
 		if(imageKey != nil)
-			[_parameters removeObjectForKey:imageKey];
+			[parameters removeObjectForKey:imageKey];
 		
 		if (dataKey != nil)
-			[_parameters removeObjectForKey:dataKey];
-		
-		//if a NSArray was passed in instead of a @"one,two,three" list we need to swap the value in _parameters with the componentsSeparatedByString value we created in the while loop above so a valid signature can be generated
-		if([arrayKeysAndValues count] > 0)
-		{
-			for(id arrayKey in [arrayKeysAndValues allKeys])
-			{
-				DLog(@"resetting %@ for key %@", [arrayKeysAndValues valueForKey:arrayKey], arrayKey);
-				[_parameters setObject:[arrayKeysAndValues valueForKey:arrayKey] forKey:arrayKey];
-			}
-		}
-			
-		
-		[postBody appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"sig\"\r\n\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
-		[postBody appendData:[[self generateSigForParameters:_parameters] dataUsingEncoding:NSUTF8StringEncoding]];
+			[parameters removeObjectForKey:dataKey];
+					
 		[postBody appendData:endLineData];
 		
 		[postRequest setHTTPBody:postBody];
 		theConnection = [NSURLConnection connectionWithRequest:postRequest delegate:self];
 	}
 	
-	if(_urlRequestType == MKFacebookRequestTypeGET)
+	if(urlRequestType == MKFacebookRequestTypeGET)
 	{
 		DLog(@"using get request");
-		NSURL *theURL = [self generateFacebookURL:_parameters];
+		NSURL *theURL = [self generateFacebookURLForMethod:self.method parameters:parameters];
 		
 		NSMutableURLRequest *getRequest = [NSMutableURLRequest requestWithURL:theURL 
 																  cachePolicy:NSURLRequestReloadIgnoringCacheData 
@@ -398,124 +304,46 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 }
 
 
-- (void)setDisplayAPIErrorAlert:(BOOL)aBool
-{
-	_displayAPIErrorAlert = aBool;
+//this private method prepares the url to call the appropriate method but does not add any of the required parameters. it is used to prepare the first part of the URL.
+/*
+ i.e. if a method users.getInfo is specified for the request, this method will prepare the url up to this point:
+ https://api.facebook.com/method/users.getInfo
+ 
+ All other parameters required by the request are handled in sendRequest where it loops through the _parameters dictionary to finish preparing the request
+ */
+- (NSString *)generateFacebookMethodURL{
+    NSMutableString *urlString = [NSMutableString stringWithString:[requestURL absoluteString]];
+    NSAssert(self.method != nil, @"Method name cannot be null");
+    [urlString appendFormat:@"%@", self.method];
+    DLog(@"Request URL: %@", urlString);
+    return urlString;
 }
 
 
-- (BOOL)displayAPIErrorAlert
+- (NSURL *)generateFacebookURLForMethod:(NSString *)aMethodName parameters:(NSDictionary *)params
 {
-	return _displayAPIErrorAlert;
-}
-
-
-- (void)setNumberOfRequestAttempts:(int)requestAttempts
-{
-	_numberOfRequestAttempts = requestAttempts;
-}
-
-
-//sorts parameters keys, creates a string of values, returns md5 hash (cleaned up by Patrick Jayet 0.8.2)
-- (NSString *)generateSigForParameters:(NSDictionary *)parameters
-{
-	DLog(@"generating sig for parameters: %@", [parameters description]);
-	// pat: fixed signature issue
-	// 1. get a sorted array with the keys
-	NSArray* sortedKeyArray = [[parameters allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
-	
-	// 2. construct the concatenated string
-	NSMutableString* tempString = [[[NSMutableString alloc] init] autorelease];
-	NSEnumerator *enumerator =[sortedKeyArray objectEnumerator];
-	NSString *key; //keys of sortedParameters
-	while(key = [enumerator nextObject])
-	{
-		//prevents attempting to append nil strings.  Thanks Andrei Freeman. 0.8.1
-		if((key != nil) && ([key length] > 0))
-		{
-			[tempString appendFormat:@"%@=%@", key, [parameters objectForKey:key]];
-		}else
-		{
-			NSException *e = [NSException exceptionWithName:@"genSigForParm" reason:@"Bad Parameter Object" userInfo:parameters];
-			[e raise];
-		}
-	}
-	
-	//methods except these require we use the secretKey that was assigned during login, not our original one
-	if([[parameters valueForKey:@"method"] isEqualToString:@"facebook.auth.getSession"] || [[parameters valueForKey:@"method"] isEqualToString:@"facebook.auth.createToken"])
-	{
-		//DLog(@"secretKey");
-		if([_session secretKey] != nil)
-			[tempString appendString:[_session secretKey]];
-		else
-		{			
-			NSException *e = [NSException exceptionWithName:@"genSigForParm" reason:@"nil secret key, is your application type set to Desktop?" userInfo:nil];
-			[e raise];
-		}
-	}else
-	{
-		//DLog(@"sessionSecret");
-		if([_session sessionSecret] != nil && [[_session sessionSecret] length] > 0)
-			[tempString appendString:[_session sessionSecret]];
-		else
-		{
-			NSException *e = [NSException exceptionWithName:@"genSigForParm" reason:@"nil session secret, is your application type set to Desktop?" userInfo:nil];
-			[e raise];
-			
-		}
-	}
-	
-	return [tempString md5HexHash];
-}
-
-
-- (NSString *)generateTimeStamp
-{
-	return [NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]];
-}
-
-
-- (NSURL *)generateFacebookURL:(NSString *)aMethodName parameters:(NSDictionary *)parameters
-{
-	NSMutableDictionary *newParams = [NSMutableDictionary dictionaryWithDictionary:parameters];
-	if(aMethodName == nil)
-	{
-		aMethodName = @"";
-	}
-	[newParams setValue:aMethodName forKey:@"method"];
-	return [self generateFacebookURL:newParams];
-}
-
-
-- (NSURL *)generateFacebookURL:(NSDictionary *)parameters
-{
-	NSMutableDictionary *mutableDictionary = [NSMutableDictionary dictionaryWithDictionary:parameters];
-	//these will be here for all requests. 
-	[mutableDictionary setValue:MKFacebookAPIVersion forKey:@"v"];
-	[mutableDictionary setValue:[_session apiKey] forKey:@"api_key"];
-	[mutableDictionary setValue:MKFacebookDefaultResponseFormat forKey:@"format"];
-	
-	//all other methods require call_id and session_key
-	if(![[mutableDictionary valueForKey:@"method"] isEqualToString:@"facebook.auth.getSession"] || ![[mutableDictionary valueForKey:@"method"] isEqualToString:@"facebook.auth.createToken"])
-	{
-		[mutableDictionary setValue:[_session sessionKey] forKey:@"session_key"];
-		[mutableDictionary setValue:[self generateTimeStamp] forKey:@"call_id"];
-	}
-	
-	NSMutableString *urlString = [[[NSMutableString alloc] initWithString:MKAPIServerURL] autorelease];
-	[urlString appendFormat:@"?method=%@", [mutableDictionary valueForKey:@"method"]]; 	//we'll do one outside the loop because we need to start with a ? anyway.  method is a good one to start with
-	NSEnumerator *enumerator = [mutableDictionary keyEnumerator];
-	id key;
-	while ((key = [enumerator nextObject])) {
-		
-		//just in case someone tries to upload a photo via GET we'll trow away the image and they'll get the error back from facebook
-		if([[mutableDictionary objectForKey:key] isKindOfClass:[NSImage class]])
-			[mutableDictionary removeObjectForKey:key];
-		
-		if([key isNotEqualTo:@"method"]) //remember we already did this one
-			[urlString appendFormat:@"&%@=%@", key, [mutableDictionary valueForKey:key]];
-	}			
-	[urlString appendFormat:@"&sig=%@", [self generateSigForParameters:mutableDictionary]];
+    
+    self.method = aMethodName;
+    [self setParameters:params];
+    
+	NSString *accessToken = [[MKFacebookSession sharedMKFacebookSession] accessToken];
+    
+    NSMutableString *urlString = [NSMutableString stringWithString:[self generateFacebookMethodURL]];
+    
+    //add the accessToken that all requests need
+    [urlString appendFormat:@"?access_token=%@", accessToken];
+    
+    //support arrays or strings
+    for(NSString *key in [parameters allKeys]){
+        id object = [parameters objectForKey:key];
+        if ([object isKindOfClass:[NSArray class]]) {
+            [urlString appendFormat:@"&%@=%@", key, [object componentsJoinedByString:@","]];
+        }
+        if([object isKindOfClass:[NSString class]]){
+            [urlString appendFormat:@"&%@=%@", key, object];
+        }
+    }
+    DLog(@"generateFacebookURLForMethod: %@", urlString);
 	return [NSURL URLWithString:[[urlString encodeURLLegally] autorelease]];
 }
 
@@ -534,7 +362,7 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 	
 	if(fetchError != nil)
 	{
-		if(_displayAPIErrorAlert == YES)
+		if(displayAPIErrorAlerts == YES)
 		{
 			MKErrorWindow *errorWindow = [MKErrorWindow errorWindowWithTitle:@"Network Problems?" message:@"I can't seem to talk to Facebook.com right now." details:[fetchError description]];
 			[errorWindow display];
@@ -603,7 +431,7 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 			//luckily for us Facebook doesn't define "the time window".
 			//we will also try the request again if we see a 1 (unknown) or 2 (service unavailable) error
 			int errorInt = [[errorDictionary valueForKey:@"error_code"] intValue];
-			if((errorInt == 4 || errorInt == 1 || errorInt == 2 ) && _numberOfRequestAttempts <= _requestAttemptCount)
+			if((errorInt == 4 || errorInt == 1 || errorInt == 2 ) && numberOfRequestAttempts <= _requestAttemptCount)
 			{
 				NSDate *sleepUntilDate = [[NSDate date] addTimeInterval:2.0];
 				[NSThread sleepUntilDate:sleepUntilDate];
@@ -619,17 +447,17 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 		}else
 		{
 			//the response we have received from facebook is valid, pass it back to the delegate.
-			if([_delegate respondsToSelector:_selector]){
-				[_delegate performSelector:_selector withObject:returnXML];
-			}else if ([_delegate respondsToSelector:defaultResponseSelector]) {
-				NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[_delegate methodSignatureForSelector:defaultResponseSelector]];
-				[invocation setTarget:_delegate];
+			if([delegate respondsToSelector:selector]){
+				[delegate performSelector:selector withObject:returnXML];
+			}else if ([delegate respondsToSelector:defaultResponseSelector]) {
+				NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[delegate methodSignatureForSelector:defaultResponseSelector]];
+				[invocation setTarget:delegate];
 				[invocation setSelector:defaultResponseSelector];
 				[invocation setArgument:&self atIndex:2];
 				[invocation setArgument:&returnXML atIndex:3];
 				[invocation invoke];
-			}else if ([_delegate respondsToSelector:deprecatedResponseSelector]) {
-				[_delegate performSelector:deprecatedResponseSelector withObject:returnXML];
+			}else if ([delegate respondsToSelector:deprecatedResponseSelector]) {
+				[delegate performSelector:deprecatedResponseSelector withObject:returnXML];
 			}
 		}	
 		
@@ -655,7 +483,7 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 					validResponse = NO;
 					//exactly like the XML part, check for error 4, 1, or 2 (defined above in the XML handling part)
 					int errorInt = [[returnJSON valueForKey:@"error_code"] intValue];
-					if((errorInt == 4 || errorInt == 1 || errorInt == 2 ) && _numberOfRequestAttempts <= _requestAttemptCount)
+					if((errorInt == 4 || errorInt == 1 || errorInt == 2 ) && numberOfRequestAttempts <= _requestAttemptCount)
 					{
 						NSDate *sleepUntilDate = [[NSDate date] addTimeInterval:2.0];
 						[NSThread sleepUntilDate:sleepUntilDate];
@@ -677,17 +505,17 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 			//response appears to be valid, return it to the delegate either via a specified selector or the default selector
 			if (validResponse == YES) {
 				//DLog(@"JSON looks good, trying to pass back to the delegate");
-				if ([_delegate respondsToSelector:_selector]) {
-					[_delegate performSelector:_selector withObject:returnJSON];
-				}else if ([_delegate respondsToSelector:defaultResponseSelector]) {
-					NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[_delegate methodSignatureForSelector:defaultResponseSelector]];
-					[invocation setTarget:_delegate];
+				if ([delegate respondsToSelector:selector]) {
+					[delegate performSelector:selector withObject:returnJSON];
+				}else if ([delegate respondsToSelector:defaultResponseSelector]) {
+					NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[delegate methodSignatureForSelector:defaultResponseSelector]];
+					[invocation setTarget:delegate];
 					[invocation setSelector:defaultResponseSelector];
 					[invocation setArgument:&self atIndex:2];
 					[invocation setArgument:&returnJSON atIndex:3];
 					[invocation invoke];
-				}else if ([_delegate respondsToSelector:deprecatedResponseSelector]) {
-					[_delegate performSelector:deprecatedResponseSelector withObject:returnJSON];
+				}else if ([delegate respondsToSelector:deprecatedResponseSelector]) {
+					[delegate performSelector:deprecatedResponseSelector withObject:returnJSON];
 				}		
 			}
 			
@@ -702,11 +530,11 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 	if (validResponse == NO) {
 		
 		MKFacebookResponseError *responseError = [MKFacebookResponseError errorFromRequest:self];
-		DLog(@"Facebook Error Code: %i", responseError.errorCode);
+		DLog(@"Facebook Error Code: %lu", (unsigned long)responseError.errorCode);
 		DLog(@"Facebook Error Message: %@", responseError.errorMessage);
 		DLog(@"Facebook Error Arguments: %@", [responseError.requestArgs description]);
 		
-		if ([self displayAPIErrorAlert] == YES) {
+		if ([self displayAPIErrorAlerts] == YES) {
 			NSString *errorString = @"Unknown Error";
 			
 			if (self.rawResponse == nil) {
@@ -723,17 +551,17 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 
 		
 		//pass the error back to the delegate
-		if([_delegate respondsToSelector:defaultErrorSelector])
+		if([delegate respondsToSelector:defaultErrorSelector])
 		{
 			
-			NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[_delegate methodSignatureForSelector:defaultErrorSelector]];
-			[invocation setTarget:_delegate];
+			NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[delegate methodSignatureForSelector:defaultErrorSelector]];
+			[invocation setTarget:delegate];
 			[invocation setSelector:defaultErrorSelector];
 			[invocation setArgument:&self atIndex:2];
 			[invocation setArgument:&responseError atIndex:3];
 			[invocation invoke];
-		}else if ([_delegate respondsToSelector:deprecatedErrorSelector]) {
-			[_delegate performSelector:deprecatedErrorSelector withObject:rawResponse];
+		}else if ([delegate respondsToSelector:deprecatedErrorSelector]) {
+			[delegate performSelector:deprecatedErrorSelector withObject:rawResponse];
 		}
 	}
 		
@@ -748,22 +576,22 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 -  (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {	
 	
-	if([self displayAPIErrorAlert])
+	if([self displayAPIErrorAlerts])
 	{
 		MKErrorWindow *errorWindow = [MKErrorWindow errorWindowWithTitle:@"Connection Error" message:@"Are you connected to the internet?" details:[[error userInfo] description]];
 		[errorWindow display];
 	}
 	
-	if([_delegate respondsToSelector:defaultFailedSelector])
+	if([delegate respondsToSelector:defaultFailedSelector])
 	{
-		NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[_delegate methodSignatureForSelector:defaultFailedSelector]];
-		[invocation setTarget:_delegate];
+		NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[delegate methodSignatureForSelector:defaultFailedSelector]];
+		[invocation setTarget:delegate];
 		[invocation setSelector:defaultFailedSelector];
 		[invocation setArgument:&self atIndex:2];
 		[invocation setArgument:&error atIndex:3];
 		[invocation invoke];
-	}else if ([_delegate respondsToSelector:deprecatedFailedSelector]) {
-		[_delegate performSelector:deprecatedFailedSelector withObject:error];
+	}else if ([delegate respondsToSelector:deprecatedFailedSelector]) {
+		[delegate performSelector:deprecatedFailedSelector withObject:error];
 	}
 		
 	
@@ -776,9 +604,9 @@ NSString *MKFacebookRequestActivityEnded = @"MKFacebookRequestActivityEnded";
 											   totalBytesWritten:(NSInteger)totalBytesWritten 
 									   totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite{
 	SEL forwardSelector = @selector(facebookRequest:bytesWritten:totalBytesWritten:totalBytesExpectedToWrite:);
-	if ([_delegate respondsToSelector:forwardSelector]) {
-		NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[_delegate methodSignatureForSelector:forwardSelector]];
-		[invocation setTarget:_delegate];
+	if ([delegate respondsToSelector:forwardSelector]) {
+		NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[delegate methodSignatureForSelector:forwardSelector]];
+		[invocation setTarget:delegate];
 		[invocation setSelector:forwardSelector];
 		[invocation setArgument:&self atIndex:2];
 		[invocation setArgument:&bytesWritten atIndex:3];

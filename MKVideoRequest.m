@@ -8,6 +8,7 @@
 
 #import "MKVideoRequest.h"
 
+NSString *MKVideoAPIServerURL = @"https://api-video.facebook.com/method/";
 
 @implementation MKVideoRequest
 
@@ -17,12 +18,10 @@
 }
 
 
-- (id)initWithDelegate:(id)delegate selector:(SEL)selector{
-	self = [super initWithDelegate:delegate selector:selector];
-	[requestURL release];
-    MKFacebookSession *session = [MKFacebookSession sharedMKFacebookSession];
-    NSString *urlString = [NSString stringWithFormat:@"%@%@", session.protocol, MKVideoAPIServerURL];
-    requestURL = [[NSURL URLWithString:urlString] retain];
+- (id)initWithDelegate:(id)aDelegate selector:(SEL)aSelector{
+	self = [super initWithDelegate:aDelegate selector:aSelector];
+    [requestURL release];
+	requestURL = [[NSURL URLWithString:MKVideoAPIServerURL] retain];
 	return self;
 }
 
@@ -34,14 +33,14 @@
 
 
 - (void)videoUpload:(NSData *)video title:(NSString *)title description:(NSString *)description{
-	[self setURLRequestType:MKFacebookRequestTypePOST];
+	[self setUrlRequestType:MKFacebookRequestTypePOST];
 	self.method=@"video.upload";
-	NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
-	[parameters setObject:video forKey:@"video"];
-	[parameters setValue:title forKey:@"title"];
-	[parameters setValue:description forKey:@"description"];
-	[self setParameters:parameters];
+	NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+	[params setObject:video forKey:@"video"];
+	[params setValue:title forKey:@"title"];
+	[params setValue:description forKey:@"description"];
+	[self setParameters:params];
 	[self sendRequest];
-	[parameters release];
+	[params release];
 }
 @end

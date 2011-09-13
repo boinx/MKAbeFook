@@ -23,10 +23,8 @@
 @class MKLoginWindow;
 
 extern NSString *MKAPIServerURL;
-extern NSString *MKVideoAPIServerURL;
 extern NSString *MKLoginUrl;
 extern NSString *MKExtendPermissionsURL;
-extern NSString *MKFacebookAPIVersion;
 extern NSString *MKFacebookDefaultResponseFormat;
 /*!
  
@@ -35,7 +33,7 @@ extern NSString *MKFacebookDefaultResponseFormat;
 
  To provide a user with a login window for your application you must do the following:
  
- 1. initialize a new MKFacebook object with your API key and a delegate object
+ 1. initialize a new MKFacebook object with your App ID and a delegate object
  
  2. call login or loginWithPermissions:forSheet:
  
@@ -75,30 +73,30 @@ extern NSString *MKFacebookDefaultResponseFormat;
 /*!
  @brief Setup new MKFacebook object.
  
- @param anAPIKey Your API key issued by Facebook.
+ @param anAppID Your App id as assigned by Facebook.
  @param aDelegate A delegate object that will receive calls from the MKFacebook object.
   
  The delegate object must implement a userLoginSuccessful method that will called after a user has successfully logged in.
  
  @result Returns allocated and initiated MKFacebook object ready to be used to log into the Facebook API.
-@version 0.7 and later
+@version 0.9 and later
  */
-+ (MKFacebook *)facebookWithAPIKey:(NSString *)anAPIKey delegate:(id)aDelegate;
++ (MKFacebook *)facebookWithAppID:(NSString *)anAppID delegate:(id)aDelegate;
 
 
 
 /*!
  @brief Setup new MKFacebook object.
  
- @param anAPIKey Your API key issued by Facebook.
+ @param anAppID Your App id as assigned by Facebook.
  @param aDelegate A delegate object that will receive calls from the MKFacebook object.
   
  The delegate object must implement a userLoginSuccessful method that will called after a user has successfully logged in.
  
  @result Returns initiated MKFacebook object ready to be used to log into the Facebook API.
-  @version 0.7 and later
+  @version 0.9 and later
  */
-- (MKFacebook *)initUsingAPIKey:(NSString *)anAPIKey delegate:(id)aDelegate;
+- (MKFacebook *)initUsingAppID:(NSString *)anAppID delegate:(id)aDelegate;
 
 
 //@}	//ENDS Instantiate group
@@ -113,12 +111,13 @@ extern NSString *MKFacebookDefaultResponseFormat;
 //@{
 
 /*!
- @brief Load existing session if available or display a login window.
+ @brief Load existing access token if available or display a login window.
  
- Tries to load existing session. If no session is available a login window will be displayed. If a user logs in successfully the session will automatically be saved to the application NSUserDefaults. If you need to display a login window while a modal window active use loginUsingModalWindow.
- 
+ Checks to see if there is an access_token available in MKFacebookSession. The access token is verified by sending a synchronous request calling users.getLoggedInUser. If no token is available or the token is not verified a login window will be displayed.
  
  You can customize the message displayed in the login window after a successful or failed login attempt by creating "FacebookLoginSuccess.html" and "FacebookLoginFailed.html" files and placing them in the Resources folder of your application.
+ 
+ Authentication uses the oAuth process described at https://developers.facebook.com/docs/authentication/
  
  @see loginUsingModalWindow 
  @see loginWithPermissions:forSheet:
@@ -129,12 +128,12 @@ extern NSString *MKFacebookDefaultResponseFormat;
 
 
 /*!
- @brief Loads an existing session if available or displays a modal login window.
+ @brief Loads existing access token if available or displays a modal login window.
  
- Tries to load an existing session. If no session is available a modal login window will be displayed. Use this method if you need to display a modal login window while another modal window is already visible.
+ This method performs the same actions as login to attempt to verify an existing access token. If needed a modal login window is displayed.
  
- If a user logs in successfully the session will automatically be saaved to the application NSUSerDefaults.
-
+ Use the modal login window if you need are creating a plugin that requires a modal window.
+ 
  @see login 
  @see loginWithPermissions:forSheet:
 
@@ -146,7 +145,9 @@ extern NSString *MKFacebookDefaultResponseFormat;
 /*!
  @brief Attempts to log a user in using existing session.  If no session is available a login window is diplayed.
  
-  Tries to load existing session. If no session is available a login window will be displayed. If a user logs in successfully the session will automatically be saved to the application NSUserDefaults. See http://wiki.developers.facebook.com/index.php/Extended_permissions for a list of available permissions.
+ Checks to see if there is an access_token available in MKFacebookSession. The access token is verified by sending a synchronous request calling users.getLoggedInUser. If no token is available or the token is not verified a login window will be displayed.
+
+ A list of permissions you can request is available at http://developers.facebook.com/docs/authentication/permissions/
  
  @param permissions List of permisisons to offer the user.
  @param sheet If YES is passed in a NSWindow will be returned, otherwise a login window will appear and nil will be returned.
@@ -164,6 +165,9 @@ extern NSString *MKFacebookDefaultResponseFormat;
  @version 0.9 and later
  */
 - (NSWindow *)loginWithPermissions:(NSArray *)permissions forSheet:(BOOL)sheet;
+
+
+- (NSWindow *)loginWithPermissions:(NSArray *)permissions forRelogin:(BOOL)relogin forSheet:(BOOL)sheet;
 
 
 
@@ -193,61 +197,20 @@ extern NSString *MKFacebookDefaultResponseFormat;
 /*!
  @brief Destoys login session.
  
- Removes any saved sessions and invalidates any future requests until a user logs in again.
+ Deletes the access token managed by MKFacebookSession.
+ 
  @version 0.9.0
  */
 - (void)logout;
 
 
-//called from MKLoginWindow after a successful login
+//called from MKLoginWindow after a successful login. Calls the users MKFacebook delegate userLoginSuccessful.
 - (void)userLoginSuccessful;
 
 
 //@}	//ENDS Manage User Login group
 #pragma mark -
 
-
-
-#pragma mark Extend Permisisons
-/*! @name Extend Permissions
- *	Display a window to allow user to extent application permissions.
- */
-//@{
-
-
-/*!
- @brief Display a window and a Facebook page to extend permisisons.
- 
- @param aString Name of extended permission to grant. See Facebook documentation for allowed extended permissions.
-
- This method will display a new window and load the Facebook URL http://www.facebook.com/connect/prompt_permissions.php to extend permissions of the application.
- 
- @see grantExtendedPermission:forSheet:
- 
- @version 0.7.4 and later
-*/
-- (void)grantExtendedPermission:(NSString *)aString;
-
-
-
-/*!
- @brief Display a window and a Facebook page to extend permisisons.
- 
- @param aString Name of extended permission to grant. See Facebook documentation for allowed extended permissions.
- @param forSheet BOOL to request a NSWindow that can be attached as a sheet, pass in NO to simply display the window.
-
- This method will display a new window and load the Facebook URL http://www.facebook.com/connect/prompt_permissions.php to extend permissions of the application.
- 
- @see grantExtendedPermission:
-
- @result Returns NSWindow or displays window.
- @version 0.8.2 and later
- */
-- (NSWindow *)grantExtendedPermission:(NSString *)aString forSheet:(BOOL)forSheet;
-
-
-//@}	//ENDS Extend Permissions group
-#pragma mark -
 
 
 #pragma mark Handle Login Alerts

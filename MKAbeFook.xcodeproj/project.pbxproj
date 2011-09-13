@@ -6,20 +6,6 @@
 	objectVersion = 42;
 	objects = {
 
-/* Begin PBXAggregateTarget section */
-		273E20C01066B5AD00721317 /* Generate Documentation */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = 273E20CC1066B63000721317 /* Build configuration list for PBXAggregateTarget "Generate Documentation" */;
-			buildPhases = (
-				273E20C71066B5EF00721317 /* ShellScript */,
-			);
-			dependencies = (
-			);
-			name = "Generate Documentation";
-			productName = "Generate Documentation";
-		};
-/* End PBXAggregateTarget section */
-
 /* Begin PBXBuildFile section */
 		2721F03B1065A443003A8EDE /* SynthesizeSingleton.h in Headers */ = {isa = PBXBuildFile; fileRef = 2721F03A1065A443003A8EDE /* SynthesizeSingleton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2721F0411065A4B2003A8EDE /* MKFacebookSession.h in Headers */ = {isa = PBXBuildFile; fileRef = 2721F03F1065A4B2003A8EDE /* MKFacebookSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -58,7 +44,6 @@
 		277BC4CD0D14815E00B9EFFE /* MKFacebookRequestQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 277BC4CB0D14815E00B9EFFE /* MKFacebookRequestQueue.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2784C16A0E34D7CB00AD28B1 /* MKErrorWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 2784C1680E34D7CB00AD28B1 /* MKErrorWindow.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2784C16B0E34D7CB00AD28B1 /* MKErrorWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2784C1690E34D7CB00AD28B1 /* MKErrorWindow.m */; };
-		2784C16D0E34D81E00AD28B1 /* ErrorWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = 2784C16C0E34D81E00AD28B1 /* ErrorWindow.nib */; };
 		27C2B95E11424569002B1FB7 /* MKFacebookResponseError.h in Headers */ = {isa = PBXBuildFile; fileRef = 27C2B95C11424569002B1FB7 /* MKFacebookResponseError.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		27C2B95F11424569002B1FB7 /* MKFacebookResponseError.m in Sources */ = {isa = PBXBuildFile; fileRef = 27C2B95D11424569002B1FB7 /* MKFacebookResponseError.m */; };
 		27D8B08D0AE6FF57007941CF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27D8B08C0AE6FF57007941CF /* WebKit.framework */; };
@@ -66,11 +51,13 @@
 		27D8B0A70AE6FFA7007941CF /* MKLoginWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 27D8B0A50AE6FFA7007941CF /* MKLoginWindow.m */; };
 		27D8B0AA0AE6FFB2007941CF /* MKFacebook.h in Headers */ = {isa = PBXBuildFile; fileRef = 27D8B0A80AE6FFB2007941CF /* MKFacebook.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		27D8B0AB0AE6FFB2007941CF /* MKFacebook.m in Sources */ = {isa = PBXBuildFile; fileRef = 27D8B0A90AE6FFB2007941CF /* MKFacebook.m */; };
-		27D8B0AD0AE6FFBC007941CF /* LoginWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = 27D8B0AC0AE6FFBC007941CF /* LoginWindow.nib */; };
 		27D8B0AF0AE7000C007941CF /* MKAbeFook.h in Headers */ = {isa = PBXBuildFile; fileRef = 27D8B0AE0AE7000C007941CF /* MKAbeFook.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		27F59BF6129360590090474A /* login_failed.html in Resources */ = {isa = PBXBuildFile; fileRef = 27F59BF5129360590090474A /* login_failed.html */; };
 		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		E122F8F31384108400947668 /* MKAbeFook.ldb in Resources */ = {isa = PBXBuildFile; fileRef = E122F8F21384108400947668 /* MKAbeFook.ldb */; };
+		E122F8F61384109500947668 /* LoginWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = E122F8F51384109500947668 /* LoginWindow.nib */; };
+		E122F8FA138410B700947668 /* ErrorWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = E122F8F9138410B700947668 /* ErrorWindow.nib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -115,7 +102,7 @@
 		277BC4CB0D14815E00B9EFFE /* MKFacebookRequestQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKFacebookRequestQueue.h; sourceTree = "<group>"; };
 		2784C1680E34D7CB00AD28B1 /* MKErrorWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKErrorWindow.h; sourceTree = "<group>"; };
 		2784C1690E34D7CB00AD28B1 /* MKErrorWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKErrorWindow.m; sourceTree = "<group>"; };
-		2784C16C0E34D81E00AD28B1 /* ErrorWindow.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = ErrorWindow.nib; sourceTree = "<group>"; };
+		2784C16C0E34D81E00AD28B1 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/ErrorWindow.nib; sourceTree = "<group>"; };
 		27C2B95C11424569002B1FB7 /* MKFacebookResponseError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKFacebookResponseError.h; sourceTree = "<group>"; };
 		27C2B95D11424569002B1FB7 /* MKFacebookResponseError.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MKFacebookResponseError.m; sourceTree = "<group>"; };
 		27D8B08C0AE6FF57007941CF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = /System/Library/Frameworks/WebKit.framework; sourceTree = "<absolute>"; };
@@ -123,12 +110,15 @@
 		27D8B0A50AE6FFA7007941CF /* MKLoginWindow.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = MKLoginWindow.m; sourceTree = "<group>"; };
 		27D8B0A80AE6FFB2007941CF /* MKFacebook.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MKFacebook.h; sourceTree = "<group>"; };
 		27D8B0A90AE6FFB2007941CF /* MKFacebook.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = MKFacebook.m; sourceTree = "<group>"; };
-		27D8B0AC0AE6FFBC007941CF /* LoginWindow.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = LoginWindow.nib; sourceTree = "<group>"; };
+		27D8B0AC0AE6FFBC007941CF /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/LoginWindow.nib; sourceTree = "<group>"; };
 		27D8B0AE0AE7000C007941CF /* MKAbeFook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKAbeFook.h; sourceTree = "<group>"; };
 		27F59BF5129360590090474A /* login_failed.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = login_failed.html; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* MKAbeFook_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MKAbeFook_Prefix.pch; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* MKAbeFook.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MKAbeFook.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E122F8F21384108400947668 /* MKAbeFook.ldb */ = {isa = PBXFileReference; lastKnownFileType = file; path = MKAbeFook.ldb; sourceTree = "<group>"; };
+		E122F8F7138410A200947668 /* de */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = de; path = de.lproj/LoginWindow.nib; sourceTree = "<group>"; };
+		E122F8F8138410AF00947668 /* fr */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = fr; path = fr.lproj/LoginWindow.nib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,6 +153,7 @@
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				089C1665FE841158C02AAC07 /* Resources */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
+				E122F8F21384108400947668 /* MKAbeFook.ldb */,
 				034768DFFF38A50411DB9C8B /* Products */,
 			);
 			name = MKAbeFook;
@@ -241,7 +232,7 @@
 			children = (
 				2784C1680E34D7CB00AD28B1 /* MKErrorWindow.h */,
 				2784C1690E34D7CB00AD28B1 /* MKErrorWindow.m */,
-				2784C16C0E34D81E00AD28B1 /* ErrorWindow.nib */,
+				E122F8F9138410B700947668 /* ErrorWindow.nib */,
 			);
 			name = "Error Window";
 			sourceTree = "<group>";
@@ -288,7 +279,7 @@
 			children = (
 				27D8B0A40AE6FFA7007941CF /* MKLoginWindow.h */,
 				27D8B0A50AE6FFA7007941CF /* MKLoginWindow.m */,
-				27D8B0AC0AE6FFBC007941CF /* LoginWindow.nib */,
+				E122F8F51384109500947668 /* LoginWindow.nib */,
 			);
 			name = "Login Window";
 			sourceTree = "<group>";
@@ -371,6 +362,8 @@
 				Japanese,
 				French,
 				German,
+				de,
+				fr,
 			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* MKAbeFook */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
@@ -378,7 +371,6 @@
 			projectRoot = "";
 			targets = (
 				8DC2EF4F0486A6940098B216 /* MKAbeFook */,
-				273E20C01066B5AD00721317 /* Generate Documentation */,
 			);
 		};
 /* End PBXProject section */
@@ -389,30 +381,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */,
-				27D8B0AD0AE6FFBC007941CF /* LoginWindow.nib in Resources */,
-				2784C16D0E34D81E00AD28B1 /* ErrorWindow.nib in Resources */,
+				E122F8F61384109500947668 /* LoginWindow.nib in Resources */,
+				E122F8FA138410B700947668 /* ErrorWindow.nib in Resources */,
 				273646D8106F3B720044AEB3 /* login_successful.html in Resources */,
 				27F59BF6129360590090474A /* login_failed.html in Resources */,
+				E122F8F31384108400947668 /* MKAbeFook.ldb in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		273E20C71066B5EF00721317 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#remove old docs\nrm -rf ../MKAbeFook_Documentation\nmkdir ../MKAbeFook_Documentation\n\n#generate xml documentation via Doxygen\n/Applications/Doxygen.app/Contents/Resources/doxygen Doxyfile\n\n#run doxygen xml through doxyclean to make it look nice\n/usr/bin/python doxyclean/doxyclean.py --input=../MKAbeFook_Documentation/xml --output=../MKAbeFook_Documentation/html --n=MKAbeFook\n\n\n#optionally, remove the xml generated by doxygen\n#rm -rf ../MKAbeFook_Documentation/xml\n\n#cd ../MKAbeFook_Documentation/html/html\n#move doxyclean documentation up to MKAbeFook_Documentation/\n#mv * ../../\n\n#remove extra html folders\n#cd ../../\n#rm -rf html";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8DC2EF540486A6940098B216 /* Sources */ = {
@@ -453,14 +430,30 @@
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
+		E122F8F51384109500947668 /* LoginWindow.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				27D8B0AC0AE6FFBC007941CF /* English */,
+				E122F8F7138410A200947668 /* de */,
+				E122F8F8138410AF00947668 /* fr */,
+			);
+			name = LoginWindow.nib;
+			sourceTree = "<group>";
+		};
+		E122F8F9138410B700947668 /* ErrorWindow.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2784C16C0E34D81E00AD28B1 /* English */,
+			);
+			name = ErrorWindow.nib;
+			sourceTree = "<group>";
+		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		1DEB91AE08733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
-				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -473,6 +466,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = MKAbeFook_Prefix.pch;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
@@ -487,8 +481,6 @@
 		1DEB91AF08733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
-				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				DEAD_CODE_STRIPPING = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -502,6 +494,7 @@
 				GCC_MODEL_TUNING = G4;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = MKAbeFook_Prefix.pch;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				MACH_O_TYPE = mh_dylib;
@@ -522,6 +515,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
@@ -539,6 +533,7 @@
 				);
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
@@ -547,49 +542,29 @@
 			};
 			name = Release;
 		};
-		273E20C11066B5AD00721317 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				PRODUCT_NAME = "Generate Documentation";
-			};
-			name = Debug;
-		};
-		273E20C21066B5AD00721317 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				PRODUCT_NAME = "Generate Documentation";
-				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
-		E122E7B41383BEFB00947668 /* Test */ = {
+		E122EF081383C0F300947668 /* Test */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
 					i386,
 					ppc,
 				);
+				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				STRIP_INSTALLED_PRODUCT = NO;
 				VERSIONING_SYSTEM = "";
 			};
 			name = Test;
 		};
-		E122E7B51383BEFB00947668 /* Test */ = {
+		E122EF091383C0F300947668 /* Test */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
-				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				DEAD_CODE_STRIPPING = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -603,6 +578,7 @@
 				GCC_MODEL_TUNING = G4;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = MKAbeFook_Prefix.pch;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				MACH_O_TYPE = mh_dylib;
@@ -615,17 +591,6 @@
 			};
 			name = Test;
 		};
-		E122E7B61383BEFB00947668 /* Test */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				PRODUCT_NAME = "Generate Documentation";
-				ZERO_LINK = NO;
-			};
-			name = Test;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -634,7 +599,7 @@
 			buildConfigurations = (
 				1DEB91AE08733DA50010E9CD /* Debug */,
 				1DEB91AF08733DA50010E9CD /* Release */,
-				E122E7B51383BEFB00947668 /* Test */,
+				E122EF091383C0F300947668 /* Test */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -644,17 +609,7 @@
 			buildConfigurations = (
 				1DEB91B208733DA50010E9CD /* Debug */,
 				1DEB91B308733DA50010E9CD /* Release */,
-				E122E7B41383BEFB00947668 /* Test */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		273E20CC1066B63000721317 /* Build configuration list for PBXAggregateTarget "Generate Documentation" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				273E20C11066B5AD00721317 /* Debug */,
-				273E20C21066B5AD00721317 /* Release */,
-				E122E7B61383BEFB00947668 /* Test */,
+				E122EF081383C0F300947668 /* Test */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

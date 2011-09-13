@@ -25,26 +25,26 @@
 	return request;
 }
 
-- (id)initWithDelegate:(id)delegate selector:(SEL)selector{
-	self = [super initWithDelegate:delegate selector:selector];
+- (id)initWithDelegate:(id)aDelegate selector:(SEL)aSelector{
+	self = [super initWithDelegate:aDelegate selector:aSelector];
 	return self;
 }
 
 #pragma mark Get Methods
 -(void)photosGet:(NSArray *)pids aid:(NSString *)aid subjId:(NSString *)subj_id
 {
-	NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
+	NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
 	self.method = @"photos.get";
 	if(pids != nil)
-		[parameters setValue:[pids componentsJoinedByString:@","] forKey:@"pids"];
+		[params setValue:[pids componentsJoinedByString:@","] forKey:@"pids"];
 	if(aid != nil)
-		 [parameters setValue:aid forKey:@"aid"];
+		 [params setValue:aid forKey:@"aid"];
 	if(subj_id != nil)
-		 [parameters setValue:subj_id forKey:@"subj_id"];
+		 [params setValue:subj_id forKey:@"subj_id"];
 		 
-	[self setParameters:parameters];
+	[self setParameters:params];
 	[self sendRequest];
-	[parameters release];
+	[params release];
 }
 
 -(void)photosGet:(NSString *)aid;
@@ -54,39 +54,48 @@
 
 -(void)photosGetTags:(NSArray *)pids
 {
-	NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
+	NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
 	self.method = @"photos.getTags";
-	[parameters setValue:[pids componentsJoinedByString:@","] forKey:@"pids"];
-	[self setParameters:parameters];
+	[params setValue:[pids componentsJoinedByString:@","] forKey:@"pids"];
+	[self setParameters:params];
 	[self sendRequest];
-	[parameters release];
+	[params release];
 }
 
-- (void)photosGetAlbums:(NSArray *)aids{
-	NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
+- (void)photosGetAlbums:(id)uidOrAids{
+	NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
 	self.method = @"photos.getAlbums";
-	[parameters setValue:[aids componentsJoinedByString:@","] forKey:@"aids"];
-	[self setParameters:parameters];
+    
+    if([uidOrAids isKindOfClass:[NSString class]]){
+        [params setValue:uidOrAids forKey:@"uid"];
+    }else if ([uidOrAids isKindOfClass:[NSArray class]]) {
+        [params setValue:[uidOrAids componentsJoinedByString:@","] forKey:@"aids"];
+    }else{
+        NSAssert(NO, @"photosGetAlbums: must be passed a NSString or NSArray");
+        [params release];
+        return;
+    }
+	[self setParameters:params];
 	[self sendRequest];
-	[parameters release];
+	[params release];
 }
 #pragma mark -
 
 #pragma mark Upload Methods
 -(void)photosUpload:(NSImage *)photo aid:(NSString *)aid caption:(NSString *)caption
 {
-	[self setURLRequestType:MKFacebookRequestTypePOST];
-	NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
+	[self setUrlRequestType:MKFacebookRequestTypePOST];
+	NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
 	self.method = @"photos.upload";
-	[parameters setValue:photo forKey:@"photo"];
+	[params setValue:photo forKey:@"photo"];
 	if(aid != nil)
-		[parameters setValue:aid forKey:@"aid"];
+		[params setValue:aid forKey:@"aid"];
 	if(caption != nil)
-		[parameters setValue:caption forKey:@"caption"];
+		[params setValue:caption forKey:@"caption"];
 	
-	[self setParameters:parameters];
+	[self setParameters:params];
 	[self sendRequest];
-	[parameters release];	
+	[params release];	
 }
 
 -(void)photosUpload:(NSImage *)photo

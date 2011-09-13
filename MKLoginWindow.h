@@ -17,8 +17,10 @@
  */
 
 #import <Cocoa/Cocoa.h>
-//0.6 case sensitivity issue fixed.  Thanks Dale.
 #import <WebKit/WebKit.h>
+
+extern NSString *MKLoginRedirectURI;
+
 @interface MKLoginWindow : NSWindowController  {
 	NSString *path;
 	IBOutlet WebView *loginWebView;
@@ -40,16 +42,8 @@
 @property BOOL runModally;
 
 -(id)init;
-
-
-
--(void)displayLoadingWindowIndicator;
--(void)hideLoadingWindowIndicator;
-
 -(void)loadURL:(NSURL *)loginURL;
 -(IBAction)closeWindow:(id)sender;
--(void)windowWillClose:(NSNotification *)aNotification;
--(void)setWindowSize:(NSSize)windowSize;
 
 
 #pragma mark WebView Delegate Methods

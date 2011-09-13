@@ -19,10 +19,20 @@
 #import "MKLoginWindow.h"
 #import "MKFacebookRequest.h"
 #import "NSXMLElementAdditions.h"
-
-#import "SBJSON.h"
-#import "NSString+SBJSON.h"
 #import "MKFacebookSession.h"
+#import "NSStringExtras.h"
+
+NSString *MKLoginRedirectURI = @"https://www.facebook.com/connect/login_success.html";
+
+@interface MKLoginWindow (Private)
+
+-(void)displayLoadingWindowIndicator;
+-(void)hideLoadingWindowIndicator;
+-(void)setWindowSize:(NSSize)windowSize;
+-(void)windowWillClose:(NSNotification *)aNotification;
+
+@end
+
 
 @implementation MKLoginWindow
 @synthesize _loginWindowIsSheet;
@@ -41,31 +51,14 @@
 }
 
 
-
 -(void)awakeFromNib
-{
-	//TODO: the window won't load correctly when we try to grant permissions unless we do this... i don't understand why...
-	//NSRect frame = [[self window] frame];
-	//[[self window] setFrame:frame display:YES animate:YES];
-	
+{	
 	[loginWebView setPolicyDelegate:self];
 	[loadingWebViewProgressIndicator bind:@"value" toObject:loginWebView withKeyPath:@"estimatedProgress" options:nil];
 	[self displayLoadingWindowIndicator];
 }
 
 
-
--(void)displayLoadingWindowIndicator
-{
-	[loadingWindowProgressIndicator setHidden:NO];
-	[loadingWindowProgressIndicator startAnimation:nil];
-}
-
--(void)hideLoadingWindowIndicator
-{
-	[loadingWindowProgressIndicator stopAnimation:nil];
-	[loadingWindowProgressIndicator setHidden:YES];
-}
 
 -(void)loadURL:(NSURL *)loginURL
 {
@@ -74,10 +67,7 @@
 	
 	DLog(@"loading url: %@", [loginURL description]);
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:loginURL];
-	
-	//[[[loginWebView mainFrame] frameView] setAllowsScrolling:NO];	
 	[[loginWebView mainFrame] loadRequest:request];
-	//[self hideLoadingWindowIndicator];
 }
 
 
@@ -94,30 +84,6 @@
 	}
 }
 
--(void)setWindowSize:(NSSize)windowSize
-{
-
-	NSRect screenRect = [[NSScreen mainScreen] frame];
-	NSRect rect = NSMakeRect(screenRect.size.width * .15, screenRect.size.height * .15, windowSize.width, windowSize.height);
-	[[self window] setFrame:rect display:YES animate:YES];
-}
-
-
-- (void)windowWillClose:(NSNotification *)aNotification
-{
-	DLog(@"windowWillClose: was called");
-
-	if (self.runModally == YES) {
-		[NSApp stopModal];
-	}else if (self._loginWindowIsSheet == YES)
-	{
-		[[self window] orderOut:[aNotification object]];
-		[NSApp endSheet:[self window] returnCode:1];
-	}
-
-	//this is not the proper way to do this, someone please fix it.
-	[self autorelease];
-}
 
 -(void)dealloc
 {
@@ -136,79 +102,62 @@
 	[loadingWebViewProgressIndicator setHidden:NO];
 }
 
+- (void)webView:(WebView *)sender didCommitLoadForFrame:(WebFrame *)frame{
+    [self hideLoadingWindowIndicator];    
+}
+
 -(void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
 {
-	[self hideLoadingWindowIndicator];
+    [loadingWebViewProgressIndicator setHidden:YES];
 	NSURL *url = [[[frame dataSource] mainResource] URL];
 	NSString *urlString = [url description];
 	DLog(@"current URL: %@", urlString);
-    
-    //check to see if the user was returned to https or http. use the returned prefix for future calls.
-    MKFacebookSession *session = [MKFacebookSession sharedMKFacebookSession];
-    session.useSecureURL = [urlString hasPrefix:@"https://"] ? YES : NO;	
-    NSString *successString = [NSString stringWithFormat:@"%@www.facebook.com/connect/login_success.html", session.protocol];
-    NSString *failureString = [NSString stringWithFormat:@"%@www.facebook.com/connect/login_failure.html", session.protocol];
-	//we need to do some extra things when a user logs in successfully
-	if([urlString hasPrefix:successString])
-	{
-		// facebook returns with this URL even if you do not allow PhotoPresenter access with extended permissions
-		// no sessionInfo is returnd in the latter case
-		
-		//unfortunately we can't call parametersString on the url that facebook returns for us to load (not sure why...)
-		//instead we'll break up the string at the = and load everything after the = as the JSON object
-		//NSArray *array = [urlString componentsSeparatedByString:@"="];
-		NSArray *array = [urlString componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"=&"]];
-		if([array lastObject] != nil)
-		{
-			//session data is now at the end of the return string, fixed by Stefan
-			NSString *decodedParameters = [[array lastObject] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-			DLog(@"parameters: %@", decodedParameters);
-			id sessionInfo = [decodedParameters JSONValue];
-			DLog(@"session info: %@", [sessionInfo description]);
-			
-			if (sessionInfo)	// login successful with extended permissions
-			{
-				[[MKFacebookSession sharedMKFacebookSession] saveSession:sessionInfo];
-				
-				//display a custom successful login message that doesn't require an external host
-				NSString *next = [[NSBundle mainBundle] pathForResource:@"FacebookLoginSuccess" ofType:@"html"];
-				if (! next)
-				{
-					NSString *fwp = [[NSBundle mainBundle] privateFrameworksPath];
-					next = [NSString stringWithFormat:@"%@/MKAbeFook.framework/Resources/login_successful.html", fwp];
-				}
-				[self loadURL:[NSURL fileURLWithPath:[next stringByExpandingTildeInPath]]];
-				
-				//finally call userLoginSuccessful
-				if([self._delegate respondsToSelector:@selector(userLoginSuccessful)])
-					[self._delegate performSelector:@selector(userLoginSuccessful)];
-			}
-			else
-			{
-				DLog(@"failed to save session info returned by facebook....");
-				[self closeWindow:self];
-			}
-		}
-		else
-		{
-			DLog(@"failed to save session info returned by facebook....");
-		}
-	}
 	
-	if([urlString hasPrefix:failureString])
+    //if we find ourselves at the URL specified by the redirect_uri parameter we know the user pressed the login button or cancel button. we don't know if the login was successful yet.
+	if([urlString hasPrefix:MKLoginRedirectURI])
 	{
-		//display a custom failed login message that doesn't require an external host
-		NSString *next = [[NSBundle mainBundle] pathForResource:@"FacebookLoginFailed" ofType:@"html"];
-		if (! next)
+        //we can verify a successful login by identifying an #access_token in the URL. lets check for it.
+        NSString *accessToken = [urlString substringBetweenString:@"#access_token=" andString:@"&"];
+		if(accessToken != nil)
 		{
-			NSString *fwp = [[NSBundle mainBundle] privateFrameworksPath];
-			next = [NSString stringWithFormat:@"%@/MKAbeFook.framework/Resources/login_failed.html", fwp];
+            //we have identified an access token
+            DLog(@"found access_token: %@", accessToken);
+            
+            //save it to the preferences
+            [[MKFacebookSession sharedMKFacebookSession] saveAccessToken:accessToken];
+            
+            //display a custom successful login message that doesn't require an external host. if the application has the file FacebookLoginSuccess.html in its resources folder use that, otherwise we'll use the ugly one provided by the framework.
+            NSString *next = [[NSBundle mainBundle] pathForResource:@"FacebookLoginSuccess" ofType:@"html"];
+            if (! next)
+            {
+                NSString *fwp = [[NSBundle mainBundle] privateFrameworksPath];
+                next = [NSString stringWithFormat:@"%@/MKAbeFook.framework/Resources/login_successful.html", fwp];
+            }
+            [self loadURL:[NSURL fileURLWithPath:[next stringByExpandingTildeInPath]]];
+            
+            //finally call userLoginSuccessful
+            if([self._delegate respondsToSelector:@selector(userLoginSuccessful)])
+                [self._delegate performSelector:@selector(userLoginSuccessful)];
+            
+            //we're done in this method
+            return;
 		}
-		[self loadURL:[NSURL fileURLWithPath:[next stringByExpandingTildeInPath]]];
-		
-	}
+        
+        
+        //TODO: move the error checking to be the first thing that happens. we don't want to display the login_success.html page that says 'Success' if the user clicked cancel even if it's only for a moment.
+        //by the time we get here we know that the login wasn't successful, lets try to figure out what went wrong and what to do about it
+        NSString *error_reason = [urlString substringBetweenString:@"error_reason=" andString:@"&"];
+        //if the error_reason is user_denied, there is a good chance the user pressed the Cancel button in the login form. dismiss the window.
+        if(error_reason != nil){
+            //lets also hide the webview so the user doesn't see misleading messages
+            [loginWebView setHidden:YES];
+            if ([error_reason isEqualToString:@"user_denied"]) {
+                [self closeWindow:self];   
+            }
+        }
+        
+    }
 	
-	[loadingWebViewProgressIndicator setHidden:YES];
 }
 
 //allow external links to open in the default browser
@@ -222,6 +171,43 @@
 		[listener use];
 }
 
+#pragma -
 
 
+#pragma mark Private
+
+-(void)displayLoadingWindowIndicator
+{
+	[loadingWindowProgressIndicator setHidden:NO];
+	[loadingWindowProgressIndicator startAnimation:nil];
+}
+
+-(void)hideLoadingWindowIndicator
+{
+	[loadingWindowProgressIndicator stopAnimation:nil];
+	[loadingWindowProgressIndicator setHidden:YES];
+}
+
+-(void)setWindowSize:(NSSize)windowSize
+{
+	NSRect screenRect = [[NSScreen mainScreen] frame];
+	NSRect rect = NSMakeRect(screenRect.size.width * .15, screenRect.size.height * .15, windowSize.width, windowSize.height);
+	[[self window] setFrame:rect display:YES animate:YES];
+}
+
+- (void)windowWillClose:(NSNotification *)aNotification
+{
+	DLog(@"windowWillClose: was called");
+    
+	if (self.runModally == YES) {
+		[NSApp stopModal];
+	}else if (self._loginWindowIsSheet == YES)
+	{
+		[[self window] orderOut:[aNotification object]];
+		[NSApp endSheet:[self window] returnCode:1];
+	}
+    
+	//this is not the proper way to do this, someone please fix it.
+	[self autorelease];
+}
 @end
