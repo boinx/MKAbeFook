@@ -89,6 +89,11 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MKFacebookSession);
 }
 
 - (void)destroyAccessToken{
+	MKFacebookRequest *revokeRequest = [[[MKFacebookRequest alloc] init] autorelease];
+	revokeRequest.delegate = self;
+	revokeRequest.method = @"auth.revokeAuthorization";
+	[revokeRequest sendRequest];
+
 	DLog(@"session was destroyed");
 	[[NSUserDefaults standardUserDefaults] removeObjectForKey:MKFacebookAccessTokenKey];
 	[[NSUserDefaults standardUserDefaults] synchronize];
